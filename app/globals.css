@@ -1,0 +1,315 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 221 83% 53%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 11%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 217 91% 60%;
+  --primary-foreground: 222 47% 11%;
+  --secondary: 217 32% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 32% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 32% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 32% 17%;
+  --input: 217 32% 17%;
+  --ring: 224 76% 48%;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body {
+  background-color: white;
+  color: #1e293b;
+}
+
+.dark body {
+  background-color: #000;
+  color: #f8fafc;
+}
+
+/* Enhanced Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.font-mono {
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "Consolas", monospace;
+}
+
+/* Meme-style gradients */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--meme-purple)) 0%,
+    hsl(var(--meme-pink)) 25%,
+    hsl(var(--meme-orange)) 50%,
+    hsl(var(--meme-green)) 75%,
+    hsl(var(--meme-blue)) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 3s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(45deg);
+  }
+}
+
+/* Fun button styles */
+.btn-meme {
+  background: linear-gradient(135deg, hsl(var(--meme-purple)), hsl(var(--meme-pink)));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-meme:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(168, 85, 247, 0.4);
+}
+
+/* Neon glow effects for dark mode */
+.dark .neon-glow {
+  box-shadow: 0 0 20px rgba(129, 140, 248, 0.3);
+}
+
+.dark .neon-text {
+  text-shadow: 0 0 10px rgba(129, 140, 248, 0.5);
+}
+
+/* Professional card styling */
+.card-enhanced {
+  backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--card) / 0.8);
+}
+
+.dark .card-enhanced {
+  background: hsl(var(--card) / 0.6);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+/* Enhanced button and interactive elements */
+.btn-enhanced {
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-enhanced:hover {
+  transform: translateY(-1px);
+}
+
+/* Improved form styling */
+.form-enhanced input,
+.form-enhanced textarea,
+.form-enhanced select {
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.form-enhanced input:focus,
+.form-enhanced textarea:focus,
+.form-enhanced select:focus {
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+}
+
+
+
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background: linear-gradient(145deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.tab-active {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);
+}
+
+.tab-inactive {
+  background: rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.social-btn {
+  background: rgba(51, 65, 85, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  transition: all 0.3s ease;
+}
+
+.social-btn:hover {
+  background: rgba(71, 85, 105, 0.8);
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px);
+}
+
+.input-field {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  width: 100%;
+}
+
+.input-field:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: #64748b;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  box-shadow: 0 4px 14px 0 rgba(168, 85, 247, 0.39);
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.primary-btn:hover {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+}
+
+.primary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+.forgot-link {
+  color: #a855f7;
+  transition: color 0.3s ease;
+}
+
+.forgot-link:hover {
+  color: #c084fc;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
+}
+
+/* Animation for modal entrance */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+.modal-exit {
+  animation: fadeIn 0.3s ease-in reverse;
+}
+
+/* Fix autofill styling - remove yellow background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure autofill works in dark mode */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Enhanced input styling with consistent blue borders */
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+  border-color: hsl(var(--primary) / 0.2) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.1) !important;
+}
+

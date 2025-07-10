@@ -1,0 +1,13 @@
+{
+  "dogecoin": {
+    "": ""
+  },
+  "shiba-inu": {
+    "ethereum": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce"
+  },
+  "pepe": {
+    "ethereum": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+    "arbitrum-one": "0x25d887ce7a35172c62febfd67a1856f20faebb00",
+    "binance-smart-chain": "0x25d887ce7a35172c62febfd67a1856f20faebb00"
+  }
+}
