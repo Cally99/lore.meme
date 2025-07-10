@@ -1,6 +1,7 @@
 // src/app/api/auth/forgot-password/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { authLogger } from '@/lib/monitoring/logger';
+import { sendCustomPasswordResetEmail } from '@/lib/email/directus-email-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,47 +11,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    console.log('🔍 Initiating password reset for:', email.toLowerCase());
+    console.log('🔍 Initiating frontend-managed password reset for:', email.toLowerCase());
     
-    // Use Directus password reset functionality
-    const resetResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/auth/password/request`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.toLowerCase(),
-          reset_url: `${process.env.NEXTAUTH_URL}/auth/reset-password`, // URL where user will reset password
-        }),
-      }
-    );
+    // Use our custom frontend email service with Directus SDK
+    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password`;
+    const result = await sendCustomPasswordResetEmail(email.toLowerCase(), resetUrl);
 
-    if (!resetResponse.ok) {
-      const errorData = await resetResponse.json().catch(() => ({}));
-      console.log('❌ Directus password reset failed:', resetResponse.status, errorData);
+    if (!result.success) {
+      console.log('❌ Custom password reset failed:', result.error);
       
-      // Don't reveal if email exists or not for security
-      if (resetResponse.status === 404) {
-        // Still return success to prevent email enumeration
-        authLogger.info('Password reset requested for non-existent email', { email: email.toLowerCase() });
-        return NextResponse.json({
-          success: true,
-          message: 'If an account with that email exists, a password reset link has been sent.',
-        });
-      }
+      // For security, we still return success to prevent email enumeration
+      // The actual error is logged but not exposed to the client
+      authLogger.warn('Password reset failed but returning success for security', {
+        email: email.toLowerCase(),
+        error: result.error
+      });
+    } else {
+      console.log('✅ Password reset email sent successfully via frontend service');
       
-      throw new Error('Password reset request failed');
+      authLogger.info('Password reset email sent via frontend service', {
+        email: email.toLowerCase(),
+        timestamp: new Date().toISOString(),
+      });
     }
 
-    console.log('✅ Password reset email sent successfully via Directus');
-    
-    authLogger.info('Password reset email sent', {
-      email: email.toLowerCase(),
-      timestamp: new Date().toISOString(),
-    });
-
+    // Always return success to prevent email enumeration attacks
     return NextResponse.json({
       success: true,
       message: 'If an account with that email exists, a password reset link has been sent.',
@@ -60,9 +45,10 @@ export async function POST(req: NextRequest) {
     console.log('❌ Password reset error:', error);
     authLogger.error('Password reset failed', error as Error);
     
-    return NextResponse.json(
-      { error: 'Failed to process password reset request' },
-      { status: 500 }
-    );
+    // Even on error, return success message to prevent email enumeration
+    return NextResponse.json({
+      success: true,
+      message: 'If an account with that email exists, a password reset link has been sent.',
+    });
   }
 }
