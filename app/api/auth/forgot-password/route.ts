@@ -10,12 +10,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    // Use admin token from environment
-    const adminToken = process.env.ADMIN_TOKEN;
-    if (!adminToken) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-
     console.log('🔍 Initiating password reset for:', email.toLowerCase());
     
     // Use Directus password reset functionality
@@ -28,7 +22,7 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           email: email.toLowerCase(),
-          reset_url: `${process.env.NEXTAUTH_URL}/reset-password`, // URL where user will reset password
+          reset_url: `${process.env.NEXTAUTH_URL}/auth/reset-password`, // URL where user will reset password
         }),
       }
     );
