@@ -1,3 +1,4 @@
+// @ts-ignore
 // app/api/webhooks/nowpayments/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { useDirectus } from '@/lib/directus/directus'
