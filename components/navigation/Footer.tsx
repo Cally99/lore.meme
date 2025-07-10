@@ -13,7 +13,7 @@ export const Footer = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <Link href="/" className="flex items-center gap-4 mb-6 md:mb-0">
-            <Image className="h-8 w-8" src="/logo.png" alt="Lore.meme Logo" width={32} height={32} />
+            <Image className="h-8 w-8" src="/Logo.png" alt="Lore.meme Logo" width={32} height={32} />
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300">
               Lore.meme
             </span>

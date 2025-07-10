@@ -41,6 +41,7 @@ interface TokenTableProps {
   sortField?: string
   sortDirection?: "asc" | "desc"
   startRank?: number
+  showHeader?: boolean
 }
 
 // Helper function to clean token names
@@ -97,7 +98,8 @@ export default function TokenTable({
   onSort,
   sortField,
   sortDirection,
-  startRank = 1
+  startRank = 1,
+  showHeader = true
 }: TokenTableProps) {
   const getSortIcon = (field: string) => {
     if (!showSorting || sortField !== field) return <ArrowUpDown className="h-4 w-4 opacity-50" />
@@ -111,66 +113,68 @@ export default function TokenTable({
   }
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-blue-100 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm">
+    <>
       {/* Desktop Table */}
       <div className="hidden md:block">
         {/* Header */}
-        <div className="grid grid-cols-12 gap-4 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          <div className="col-span-1 text-center">#</div>
-          <div className="col-span-3">
-            {showSorting ? (
-              <button
-                onClick={() => handleSort("name")}
-                className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400"
-              >
-                Token {getSortIcon("name")}
-              </button>
-            ) : (
-              "Token"
-            )}
+        {showHeader && (
+          <div className="grid grid-cols-12 gap-4 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <div className="col-span-1 text-center">#</div>
+            <div className="col-span-3">
+              {showSorting ? (
+                <button
+                  onClick={() => handleSort("name")}
+                  className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400"
+                >
+                  Token {getSortIcon("name")}
+                </button>
+              ) : (
+                "Token"
+              )}
+            </div>
+            <div className="col-span-2 text-center">
+              {showSorting ? (
+                <button
+                  onClick={() => handleSort("price_change_percentage_24h")}
+                  className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
+                >
+                  24h Change {getSortIcon("price_change_percentage_24h")}
+                </button>
+              ) : (
+                "24h Change"
+              )}
+            </div>
+            <div className="col-span-2 text-center">
+              {showSorting ? (
+                <button
+                  onClick={() => handleSort("good_lores")}
+                  className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
+                >
+                  <Heart className="h-4 w-4" />
+                  Lores {getSortIcon("good_lores")}
+                </button>
+              ) : (
+                <div className="flex items-center gap-1 justify-center">
+                  <Heart className="h-4 w-4" />
+                  Lores
+                </div>
+              )}
+            </div>
+            <div className="col-span-2 text-center">
+              {showSorting ? (
+                <button
+                  onClick={() => handleSort("created_at")}
+                  className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
+                >
+                  Age {getSortIcon("created_at")}
+                </button>
+              ) : (
+                "Age"
+              )}
+            </div>
+            <div className="col-span-2 text-center">Added By</div>
           </div>
-          <div className="col-span-2 text-center">
-            {showSorting ? (
-              <button
-                onClick={() => handleSort("price_change_percentage_24h")}
-                className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-              >
-                24h Change {getSortIcon("price_change_percentage_24h")}
-              </button>
-            ) : (
-              "24h Change"
-            )}
-          </div>
-          <div className="col-span-2 text-center">
-            {showSorting ? (
-              <button
-                onClick={() => handleSort("good_lores")}
-                className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-              >
-                <Heart className="h-4 w-4" />
-                Lores {getSortIcon("good_lores")}
-              </button>
-            ) : (
-              <div className="flex items-center gap-1 justify-center">
-                <Heart className="h-4 w-4" />
-                Lores
-              </div>
-            )}
-          </div>
-          <div className="col-span-2 text-center">
-            {showSorting ? (
-              <button
-                onClick={() => handleSort("created_at")}
-                className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-              >
-                Age {getSortIcon("created_at")}
-              </button>
-            ) : (
-              "Age"
-            )}
-          </div>
-          <div className="col-span-2 text-center">Added By</div>
-        </div>
+        )}
 
         {/* Token Rows */}
         <div className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -257,18 +261,20 @@ export default function TokenTable({
         <div className="overflow-x-auto scrollbar-hide">
           <div className="min-w-max">
             {/* Header */}
-            <div className="flex bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300">
-              <div className="sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700 min-w-[180px] p-3">
-                Token
+            {showHeader && (
+              <div className="flex bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <div className="sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-r border-slate-200 dark:border-slate-700 min-w-[180px] p-3">
+                  Token
+                </div>
+                <div className="min-w-[80px] p-3 text-center">24h %</div>
+                <div className="min-w-[100px] p-3 text-center flex items-center justify-center gap-1">
+                  <Heart className="h-3 w-3" />
+                  Lores
+                </div>
+                <div className="min-w-[60px] p-3 text-center">Age</div>
+                <div className="min-w-[100px] p-3 text-center">Added By</div>
               </div>
-              <div className="min-w-[80px] p-3 text-center">24h %</div>
-              <div className="min-w-[100px] p-3 text-center flex items-center justify-center gap-1">
-                <Heart className="h-3 w-3" />
-                Lores
-              </div>
-              <div className="min-w-[60px] p-3 text-center">Age</div>
-              <div className="min-w-[100px] p-3 text-center">Added By</div>
-            </div>
+            )}
 
             {/* Token rows */}
             <div className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -347,6 +353,6 @@ export default function TokenTable({
           <p className="text-slate-600 dark:text-slate-400">No tokens found</p>
         </div>
       )}
-    </div>
+    </>
   )
 }

@@ -266,7 +266,7 @@ export default function Home() {
               </div>
 
               {/* Use existing table components for search results */}
-              <TokenTable tokens={searchResults} />
+              <TokenTable tokens={searchResults} showHeader={false} />
               
               {searchResults.length === 0 && (
                 <div className="text-center py-12">
@@ -329,7 +329,7 @@ export default function Home() {
                 const tokens = sortTokens(allTokens, "top-1h").slice(0, 30)
                 return (
                   <>
-                    <TokenTable tokens={tokens} />
+                    <TokenTable tokens={tokens} showHeader={false} />
                   </>
                 )
               })()}
@@ -340,7 +340,7 @@ export default function Home() {
                 const tokens = sortTokens(allTokens, "top-24h").slice(0, 30)
                 return (
                   <>
-                    <TokenTable tokens={tokens} />
+                    <TokenTable tokens={tokens} showHeader={false} />
                   </>
                 )
               })()}
@@ -351,7 +351,7 @@ export default function Home() {
                 const tokens = sortTokens(allTokens, "top-7d").slice(0, 30)
                 return (
                   <>
-                    <TokenTable tokens={tokens} />
+                    <TokenTable tokens={tokens} showHeader={false} />
                   </>
                 )
               })()}
@@ -362,7 +362,7 @@ export default function Home() {
                 const tokens = sortTokens(allTokens, "newest").slice(0, 30)
                 return (
                   <>
-                    <TokenTable tokens={tokens} />
+                    <TokenTable tokens={tokens} showHeader={false} />
                   </>
                 )
               })()}
@@ -373,7 +373,7 @@ export default function Home() {
                 const tokens = sortTokens(allTokens, "all").slice(0, 30)
                 return (
                   <>
-                    <TokenTable tokens={tokens} />
+                    <TokenTable tokens={tokens} showHeader={false} />
                   </>
                 )
               })()}

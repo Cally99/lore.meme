@@ -55,7 +55,7 @@ export default function MobileNav() {
           {/* Replace BookOpen with the custom logo */}
           <Image 
             className="h-8 w-8" 
-            src="/logo.png" 
+            src="/Logo.png" 
             alt="Lore.meme Logo" 
             width={32} 
             height={32} 

@@ -38,7 +38,7 @@ export default function DesktopNav() {
   return (
     <header className="hidden md:flex container mx-auto py-6 px-4 items-center justify-between">
       <Link href="/" className="flex items-center gap-2">
-        <Image className="h-8 w-8 gap-6" src="/logo.png" alt="Lore.meme Logo" width={32} height={32} />
+        <Image className="h-8 w-8 gap-6" src="/Logo.png" alt="Lore.meme Logo" width={32} height={32} />
         <span className="text-xl font-bold bg-clip-text px-2 text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300">Lore.meme</span>
       </Link>
 
