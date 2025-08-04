@@ -16,65 +16,7 @@ export default function Contact() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-black text-slate-900 dark:text-slate-100">
-      {/* Header */}
-      <header className="container mx-auto py-6 px-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300">
-            Lore.meme
-          </span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/submit-lore">
-              <Button
-                variant="outline"
-                className="border-blue-500 text-blue-500 hover:bg-blue-500/10 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400/10"
-              >
-                Submit Lore
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 dark:from-blue-500 dark:to-blue-400 dark:hover:from-blue-600 dark:hover:to-blue-500">
-                Contact Us
-              </Button>
-            </Link>
-          </nav>
-          {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
-          )}
-          <Button variant="ghost" className="md:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="h-6 w-6"
-            >
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="20" y1="6" y2="6" />
-              <line x1="4" x2="20" y1="18" y2="18" />
-            </svg>
-          </Button>
-        </div>
-      </header>
-
-      {/* Contact Section */}
-      <section className="container mx-auto px-4 py-20 flex flex-col items-center text-center">
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-black text-slate-900 dark:text-slate-100">      <section className="container mx-auto px-4 py-20 flex flex-col items-center text-center">
         <h1 className="text-5xl md:text-6xl font-bold mb-10 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300">
           Contact Us
         </h1>

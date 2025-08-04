@@ -68,16 +68,14 @@ export function SubmitLoreForm() {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [showPaymentModal, setShowPaymentModal] = useState(false)
 
-    // Enhanced token validation state for all fields
+    // Enhanced token validation state for name and symbol only
     const [tokenValidation, setTokenValidation] = useState<{
         name: { isChecking: boolean; isValid: boolean; message: string; };
         symbol: { isChecking: boolean; isValid: boolean; message: string; };
-        address: { isChecking: boolean; isValid: boolean; message: string; };
         overall: { isValid: boolean; message: string; };
     }>({
         name: { isChecking: false, isValid: true, message: '' },
         symbol: { isChecking: false, isValid: true, message: '' },
-        address: { isChecking: false, isValid: true, message: '' },
         overall: { isValid: true, message: '' }
     });
 
@@ -85,11 +83,10 @@ export function SubmitLoreForm() {
     const validateTokenFields = useCallback(
         debounce(async (name: string, symbol: string, address: string) => {
             // Skip validation if all fields are empty
-            if (!name.trim() && !symbol.trim() && !address.trim()) {
+            if (!name.trim() && !symbol.trim()) {
                 setTokenValidation({
                     name: { isChecking: false, isValid: true, message: '' },
                     symbol: { isChecking: false, isValid: true, message: '' },
-                    address: { isChecking: false, isValid: true, message: '' },
                     overall: { isValid: true, message: '' }
                 });
                 return;
@@ -99,15 +96,13 @@ export function SubmitLoreForm() {
             setTokenValidation(prev => ({
                 ...prev,
                 name: name.trim() ? { ...prev.name, isChecking: true } : prev.name,
-                symbol: symbol.trim() ? { ...prev.symbol, isChecking: true } : prev.symbol,
-                address: address.trim() ? { ...prev.address, isChecking: true } : prev.address
+                symbol: symbol.trim() ? { ...prev.symbol, isChecking: true } : prev.symbol
             }));
 
             try {
                 const params = new URLSearchParams();
                 if (name.trim()) params.append('name', name.trim());
                 if (symbol.trim()) params.append('symbol', symbol.trim());
-                if (address.trim()) params.append('address', address.trim());
 
                 const response = await fetch(`/api/validate-token?${params.toString()}`);
                 const data = await response.json();
@@ -129,13 +124,6 @@ export function SubmitLoreForm() {
                             ? (data.details.symbol.exists ? 'Symbol already exists' : 'Symbol already submitted')
                             : ''
                     },
-                    address: {
-                        isChecking: false,
-                        isValid: address.trim() ? data.details?.address?.available ?? true : true,
-                        message: address.trim() && !data.details?.address?.available
-                            ? (data.details.address.exists ? 'Address already exists' : 'Address already submitted')
-                            : ''
-                    },
                     overall: {
                         isValid: data.available,
                         message: data.message
@@ -146,7 +134,6 @@ export function SubmitLoreForm() {
                 setTokenValidation({
                     name: { isChecking: false, isValid: true, message: 'Unable to validate' },
                     symbol: { isChecking: false, isValid: true, message: 'Unable to validate' },
-                    address: { isChecking: false, isValid: true, message: 'Unable to validate' },
                     overall: { isValid: true, message: 'Validation temporarily unavailable' }
                 });
             }
@@ -156,16 +143,12 @@ export function SubmitLoreForm() {
 
     // Individual field validation triggers
     const validateTokenName = useCallback((name: string) => {
-        validateTokenFields(name, formData.token_symbol, formData.token_address);
-    }, [formData.token_symbol, formData.token_address, validateTokenFields]);
+        validateTokenFields(name, formData.token_symbol, '');
+    }, [formData.token_symbol, validateTokenFields]);
 
     const validateTokenSymbol = useCallback((symbol: string) => {
-        validateTokenFields(formData.token, symbol, formData.token_address);
-    }, [formData.token, formData.token_address, validateTokenFields]);
-
-    const validateTokenAddress = useCallback((address: string) => {
-        validateTokenFields(formData.token, formData.token_symbol, address);
-    }, [formData.token, formData.token_symbol, validateTokenFields]);
+        validateTokenFields(formData.token, symbol, '');
+    }, [formData.token, validateTokenFields]);
 
     // NOW conditional logic and early returns are safe
     // Show loading state while checking auth
@@ -185,32 +168,14 @@ export function SubmitLoreForm() {
 
         if (!formData.token.trim()) {
             newErrors.token = 'Token name is required'
-        } else if (!tokenValidation.name.isValid) {
-            newErrors.token = tokenValidation.name.message || 'Token name is not available'
         }
 
         if (!formData.token_symbol.trim()) {
             newErrors.token_symbol = 'Token symbol is required'
-        } else if (!tokenValidation.symbol.isValid) {
-            newErrors.token_symbol = tokenValidation.symbol.message || 'Token symbol is not available'
         }
 
         if (!formData.token_address.trim()) {
             newErrors.token_address = 'Token address is required'
-        } else if (!/^0x[a-fA-F0-9]{40}$/.test(formData.token_address)) {
-            newErrors.token_address = 'Invalid token address format'
-        } else if (!tokenValidation.address.isValid) {
-            newErrors.token_address = tokenValidation.address.message || 'Token address is not available'
-        }
-
-        // Check if any validation is still in progress
-        if (tokenValidation.name.isChecking || tokenValidation.symbol.isChecking || tokenValidation.address.isChecking) {
-            newErrors.submit = 'Please wait for validation to complete'
-        }
-
-        // Check overall validation state
-        if (!tokenValidation.overall.isValid && !newErrors.token && !newErrors.token_symbol && !newErrors.token_address) {
-            newErrors.submit = tokenValidation.overall.message || 'Token validation failed'
         }
 
         // Add validation for relationship_to_token
@@ -510,19 +475,9 @@ export function SubmitLoreForm() {
                                     value={formData.token_address}
                                     onChange={(e) => {
                                         handleInputChange('token_address', e.target.value);
-                                        validateTokenAddress(e.target.value);
                                     }}
-                                    className={`bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 font-mono ${!tokenValidation.address.isValid ? 'border-red-500' : ''}`}
+                                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500 font-mono"
                                 />
-                                {tokenValidation.address.isChecking && (
-                                    <p className="text-blue-400 text-sm mt-1">Checking address availability...</p>
-                                )}
-                                {!tokenValidation.address.isValid && tokenValidation.address.message && (
-                                    <p className="text-red-400 text-sm mt-1">{tokenValidation.address.message}</p>
-                                )}
-                                {tokenValidation.address.isValid && formData.token_address && !tokenValidation.address.isChecking && (
-                                    <p className="text-green-400 text-sm mt-1">✓ Token address is available</p>
-                                )}
                                 {errors.token_address && (
                                     <p className="text-red-400 text-sm mt-1">{errors.token_address}</p>
                                 )}

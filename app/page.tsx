@@ -284,28 +284,57 @@ export default function Home() {
             // Regular Tabs View
             <Tabs defaultValue="newest" className="w-full">
             <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-              <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-1">
-                <TabsTrigger value="top-1h" className="flex items-center gap-1 text-xs md:text-sm">
-                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">Top</span> 1h
-                </TabsTrigger>
-                <TabsTrigger value="top-24h" className="flex items-center gap-1 text-xs md:text-sm">
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">Top</span> 24h
-                </TabsTrigger>
-                <TabsTrigger value="top-7d" className="flex items-center gap-1 text-xs md:text-sm">
-                  <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden sm:inline">Top</span> 7d
-                </TabsTrigger>
-                <TabsTrigger value="newest" className="flex items-center gap-1 text-xs md:text-sm">
-                  <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                  Newest
-                </TabsTrigger>
-                <TabsTrigger value="all" className="flex items-center gap-1 text-xs md:text-sm">
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
-                  All Time
-                </TabsTrigger>
-              </TabsList>
+              {/* Mobile Tabs - Horizontally Scrollable */}
+              <div className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4">
+                <TabsList className="inline-flex items-center justify-start gap-1">
+                  <TabsTrigger value="top-1h" className="flex items-center gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    1h
+                  </TabsTrigger>
+                  <TabsTrigger value="top-24h" className="flex items-center gap-1 text-xs">
+                    <TrendingUp className="h-3 w-3" />
+                    24h
+                  </TabsTrigger>
+                  <TabsTrigger value="top-7d" className="flex items-center gap-1 text-xs">
+                    <Calendar className="h-3 w-3" />
+                    7d
+                  </TabsTrigger>
+                  <TabsTrigger value="newest" className="flex items-center gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    New
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="flex items-center gap-1 text-xs">
+                    <TrendingUp className="h-3 w-3" />
+                    All
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              {/* Desktop Tabs - Grid Layout */}
+              <div className="hidden md:block">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 gap-1">
+                  <TabsTrigger value="top-1h" className="flex items-center gap-1 text-sm">
+                    <Clock className="h-4 w-4" />
+                    <span className="hidden sm:inline">Top</span> 1h
+                  </TabsTrigger>
+                  <TabsTrigger value="top-24h" className="flex items-center gap-1 text-sm">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="hidden sm:inline">Top</span> 24h
+                  </TabsTrigger>
+                  <TabsTrigger value="top-7d" className="flex items-center gap-1 text-sm">
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">Top</span> 7d
+                  </TabsTrigger>
+                  <TabsTrigger value="newest" className="flex items-center gap-1 text-sm">
+                    <Clock className="h-4 w-4" />
+                    Newest
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="flex items-center gap-1 text-sm">
+                    <TrendingUp className="h-4 w-4" />
+                    All Time
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </div>
 
             {/* Desktop Header */}

@@ -742,6 +742,43 @@ export async function deleteToken(id: string) {
   }
 }
 
+export async function updateToken(id: string, tokenData: any) {
+  console.log(`🔄 Updating token ${id} with data:`, tokenData)
+
+  try {
+    // Map the form data to Directus field names
+    const directusData = {
+      name: tokenData.name,
+      symbol: tokenData.symbol,
+      token_address: tokenData.address,
+      description: tokenData.description,
+      lore_content: tokenData.story,
+      image_url: tokenData.image_url,
+      twitter_handle: tokenData.twitter,
+      telegram_handle: tokenData.telegram,
+      dexscreener: tokenData.dexscreener,
+      featured: tokenData.featured,
+      date_updated: new Date().toISOString()
+    }
+
+    const response = await makeDirectusRequest(`meme_tokens/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(directusData),
+    })
+
+    console.log("✅ Token updated successfully")
+    revalidatePath('/admin')
+    revalidatePath('/all-tokens')
+    revalidatePath(`/token/${id}`)
+    
+    return { success: true, data: response.data }
+
+  } catch (error) {
+    console.error("💥 Error updating token:", error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
 export async function submitToken(token: any) {
   return { success: true }
 }

@@ -91,6 +91,11 @@ async function handlePaymentSuccess(paymentId: string, payload: any) {
       return
     }
 
+    if (!directus) {
+      console.error('Directus client not available - NEXT_PUBLIC_DIRECTUS_URL not configured')
+      return
+    }
+
     // For hosted payments, we need to store the payment record
     // and potentially trigger lore submission processing
     
@@ -133,6 +138,11 @@ async function handlePaymentFailure(paymentId: string, payload: any) {
       return
     }
 
+    if (!directus) {
+      console.error('Directus client not available - NEXT_PUBLIC_DIRECTUS_URL not configured')
+      return
+    }
+
     // Create/update payment record with failed status
     await directus.request(
       createItem('payments', {
@@ -167,6 +177,11 @@ async function handlePaymentPending(paymentId: string, payload: any) {
     
     if (!adminToken) {
       console.error('DIRECTUS_ADMIN_TOKEN not configured')
+      return
+    }
+
+    if (!directus) {
+      console.error('Directus client not available - NEXT_PUBLIC_DIRECTUS_URL not configured')
       return
     }
 
