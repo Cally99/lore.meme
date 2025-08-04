@@ -123,11 +123,11 @@ function transformDirectusToken(directusToken: any): Token {
     good_lores: directusToken.lore_count || 0,
     creator_type: creatorType,
     
-    // Add price change fields for volume sorting
-    price_change_percentage_1h: directusToken.price_change_percentage_1h || 0,
-    price_change_percentage_24h: directusToken.price_change_percentage_24h || 0,
-    price_change_percentage_7d: directusToken.price_change_percentage_7d || 0,
-    total_volume: directusToken.total_volume || 0,
+    // Add price change fields for volume sorting - only include if data exists
+    price_change_percentage_1h: directusToken.price_change_percentage_1h,
+    price_change_percentage_24h: directusToken.price_change_percentage_24h,
+    price_change_percentage_7d: directusToken.price_change_percentage_7d,
+    total_volume: directusToken.total_volume,
   }
 }
 
@@ -160,6 +160,8 @@ export async function getTokensWithPagination(options?: {
   limit?: number
   orderBy?: string
   sortBy?: "volume_1h" | "volume_24h" | "volume_7d" | "newest" | "top"
+  sortField?: string
+  sortDirection?: "asc" | "desc"
 }): Promise<PaginatedTokensResponse> {
   console.log("🚀 getTokensWithPagination called with options:", options)
 
@@ -184,31 +186,58 @@ export async function getTokensWithPagination(options?: {
       params.append('filter[featured][_eq]', options.featured.toString())
     }
     
-    // Add sorting based on sortBy option
-    if (options?.sortBy) {
+    // Add sorting based on sortField and sortDirection
+    if (options?.sortField && options?.sortDirection) {
+      const direction = options.sortDirection === 'asc' ? '' : '-'
+      let sortFieldName = ''
+      
+      switch (options.sortField) {
+        case 'price_change_percentage_24h':
+          sortFieldName = 'price_change_percentage_24h'
+          break
+        case 'price_change_percentage_7d':
+          sortFieldName = 'price_change_percentage_7d'
+          break
+        case 'good_lores':
+          sortFieldName = 'lore_count'
+          break
+        case 'created_at':
+          sortFieldName = 'added_date'
+          break
+        case 'name':
+          sortFieldName = 'name'
+          break
+        default:
+          sortFieldName = 'lore_count'
+          break
+      }
+      
+      params.append('sort', `-featured,${direction}${sortFieldName}`)
+    } else if (options?.sortBy) {
       switch (options.sortBy) {
         case 'volume_1h':
-          params.append('sort', '-price_change_percentage_1h')
+          params.append('sort', '-featured,-price_change_percentage_1h')
           break
         case 'volume_24h':
-          params.append('sort', '-price_change_percentage_24h')
+          params.append('sort', '-featured,-price_change_percentage_24h')
           break
         case 'volume_7d':
-          params.append('sort', '-price_change_percentage_7d')
+          params.append('sort', '-featured,-price_change_percentage_7d')
           break
         case 'newest':
-          params.append('sort', '-added_date')
+          params.append('sort', '-featured,-added_date')
           break
         case 'top':
         default:
-          params.append('sort', '-lore_count')
+          params.append('sort', '-featured,-lore_count')
           break
       }
     } else if (options?.orderBy) {
       const sortDirection = '-'
-      params.append('sort', `${sortDirection}${options.orderBy}`)
+      params.append('sort', `-featured,${sortDirection}${options.orderBy}`)
     } else {
-      params.append('sort', '-lore_count')
+      // Default sort: featured tokens first, then by lore count (all-time lores)
+      params.append('sort', '-featured,-lore_count')
     }
 
     // Get total count first

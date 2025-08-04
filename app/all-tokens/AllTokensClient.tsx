@@ -3,12 +3,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { TrendingUp } from "lucide-react"
+import { TrendingUp, Clock, Calendar, Zap } from "lucide-react"
 import TokenTable from "@/components/tokens/TokenTable"
 import TokenPagination from "@/components/tokens/TokenPagination"
 import { getTokensWithPagination } from "../actions/token-actions"
+import { Button } from "@/components/ui/button"
 
-type SortField = "rank" | "name" | "good_lores" | "created_at" | "price_change_percentage_24h"
+type SortField = "rank" | "name" | "good_lores" | "created_at" | "price_change_percentage_24h" | "price_change_percentage_7d"
 type SortDirection = "asc" | "desc"
 
 interface Token {
@@ -55,6 +56,8 @@ export default function AllTokensClient() {
   })
   const [sortField, setSortField] = useState<SortField>("good_lores")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [sortBy, setSortBy] = useState<string>("top")
+  const [activeFilter, setActiveFilter] = useState<string>("top")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -64,11 +67,17 @@ export default function AllTokensClient() {
     async function fetchTokens() {
       try {
         setLoading(true)
+        
         const fetchedData = await getTokensWithPagination({
-          // Remove status filter to show all tokens
+          // Show all tokens (no status filter)
           page: currentPage,
           limit: pageSize,
-          sortBy: sortField === "good_lores" ? "top" : sortField === "created_at" ? "newest" : undefined
+          sortBy: activeFilter === "newest" ? "newest" :
+                 activeFilter === "volume_1h" ? "volume_1h" :
+                 activeFilter === "volume_24h" ? "volume_24h" :
+                 activeFilter === "volume_7d" ? "volume_7d" : "top",
+          sortField: sortField,
+          sortDirection: sortDirection
         })
         setTokenData(fetchedData)
       } catch (err) {
@@ -80,15 +89,39 @@ export default function AllTokensClient() {
     }
 
     fetchTokens()
-  }, [currentPage, pageSize, sortField])
+  }, [currentPage, pageSize, sortField, sortDirection, activeFilter])
 
   const handleSort = (field: string, direction: SortDirection) => {
     setSortField(field as SortField)
     setSortDirection(direction)
+    setCurrentPage(1) // Reset to first page when sorting changes
   }
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter)
+    setCurrentPage(1) // Reset to first page when filter changes
+    
+    // Update sort field based on filter
+    if (filter === "newest") {
+      setSortField("created_at")
+      setSortDirection("desc")
+    } else if (filter === "volume_1h") {
+      setSortField("price_change_percentage_24h") // Using 24h as proxy for 1h
+      setSortDirection("desc")
+    } else if (filter === "volume_24h") {
+      setSortField("price_change_percentage_24h")
+      setSortDirection("desc")
+    } else if (filter === "volume_7d") {
+      setSortField("price_change_percentage_7d") // Using 7d data
+      setSortDirection("desc")
+    } else {
+      setSortField("good_lores")
+      setSortDirection("desc")
+    }
   }
 
   if (loading) {
@@ -109,7 +142,56 @@ export default function AllTokensClient() {
           <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300">
             Token Rankings
           </h1>
-          <p className="text-slate-600 dark:text-slate-300 mb-6">Top tokens ranked by community lore votes</p>
+          <p className="text-slate-600 dark:text-slate-300 mb-6">Discover trending tokens and newest additions to the platform</p>
+          
+          {/* Filter Buttons */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              variant={activeFilter === "volume_1h" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange("volume_1h")}
+              className="flex items-center gap-2"
+            >
+              <Clock className="h-4 w-4" />
+              Top 1h
+            </Button>
+            <Button
+              variant={activeFilter === "volume_24h" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange("volume_24h")}
+              className="flex items-center gap-2"
+            >
+              <TrendingUp className="h-4 w-4" />
+              Top 24h
+            </Button>
+            <Button
+              variant={activeFilter === "volume_7d" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange("volume_7d")}
+              className="flex items-center gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Top 7d
+            </Button>
+            <Button
+              variant={activeFilter === "newest" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange("newest")}
+              className="flex items-center gap-2"
+            >
+              <Clock className="h-4 w-4" />
+              Newest
+            </Button>
+            <Button
+              variant={activeFilter === "top" ? "default" : "outline"}
+              size="sm"
+              onClick={() => handleFilterChange("top")}
+              className="flex items-center gap-2"
+            >
+              <Zap className="h-4 w-4" />
+              All Time
+            </Button>
+          </div>
         </div>
 
         {error && (

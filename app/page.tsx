@@ -282,7 +282,7 @@ export default function Home() {
             </>
           ) : (
             // Regular Tabs View
-            <Tabs defaultValue="newest" className="w-full">
+            <Tabs defaultValue="all" className="w-full">
             <div className="p-4 border-b border-slate-200 dark:border-slate-700">
               {/* Mobile Tabs - Horizontally Scrollable */}
               <div className="md:hidden overflow-x-auto scrollbar-hide -mx-4 px-4">

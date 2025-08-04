@@ -121,308 +121,200 @@ export default function TokenTable({
 
   return (
     <div className="w-full">
-      {/* Desktop Table */}
+      {/* Desktop Grid Layout - Matches homepage exactly */}
       <div className="hidden md:block">
-        <div className="flex border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
-          {/* Fixed Token Name Column */}
-          <div className="w-80 min-w-[200px] max-w-[300px] border-r border-slate-200 dark:border-slate-700 overflow-x-auto">
-            <table className="w-full bg-white dark:bg-gray-800">
-              {showHeader && (
-                <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider w-[60px]"
-                    >
-                      #
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                    >
-                      {showSorting ? (
-                        <button
-                          onClick={() => handleSort("name")}
-                          className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400"
-                          aria-label={`Sort by token name (${sortField === "name" ? sortDirection : "none"})`}
-                        >
-                          Token {getSortIcon("name")}
-                        </button>
+        {/* Desktop Header - Only show when showHeader is true */}
+        {showHeader && (
+          <div className="grid grid-cols-12 gap-4 p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300">
+            <div className="col-span-1 text-center">#</div>
+            <div className="col-span-3">Token</div>
+            <div className="col-span-2 text-center">24h Change</div>
+            <div className="col-span-2 text-center">
+              <div className="flex items-center gap-1 justify-center">
+                <Heart className="h-4 w-4" />
+                Lores
+              </div>
+            </div>
+            <div className="col-span-2 text-center">Age</div>
+            <div className="col-span-2 text-center">Added By</div>
+          </div>
+        )}
+
+        {/* Desktop Body - Uses same grid structure */}
+        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+          {tokens.map((token, index) => {
+            const globalRank = startRank + index;
+            const priceChange = token.price_change_percentage_24h;
+            const isPositive = priceChange !== undefined && priceChange !== null && priceChange >= 0;
+            const hasValidPriceData = priceChange !== undefined && priceChange !== null;
+
+            return (
+              <div
+                key={token.id}
+                className="grid grid-cols-12 gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
+                {/* Rank - col-span-1 */}
+                <div className="col-span-1 flex items-center justify-center">
+                  <Badge className={`text-sm ${getRankBadgeColor(globalRank)}`}>
+                    {globalRank}
+                  </Badge>
+                </div>
+
+                {/* Token - col-span-3 */}
+                <div className="col-span-3 flex items-center">
+                  <Link
+                    href={`/token/${encodeURIComponent(token.symbol)}`}
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity w-full"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <img
+                        src={token.image_url || "/placeholder.svg?height=48&width=48"}
+                        alt={cleanTokenName(token.name)}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "/placeholder.svg?height=48&width=48";
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-900 dark:text-slate-100 text-lg break-words">
+                          {cleanTokenName(token.name)}
+                        </span>
+                        {token.featured && (
+                          <Badge className="bg-yellow-500 text-black text-xs">★</Badge>
+                        )}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400 break-all">{token.symbol}</div>
+                    </div>
+                  </Link>
+                </div>
+
+                {/* 24h Change - col-span-2 */}
+                <div className="col-span-2 flex items-center justify-center">
+                  {hasValidPriceData ? (
+                    <div className={`flex items-center justify-center gap-1 font-medium text-lg ${
+                      isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                    }`}>
+                      {isPositive ? (
+                        <TrendingUp className="h-4 w-4" />
                       ) : (
-                        "Token"
+                        <TrendingDown className="h-4 w-4" />
                       )}
-                    </th>
-                  </tr>
-                </thead>
-              )}
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {tokens.map((token, index) => {
-                  const globalRank = startRank + index;
-                  return (
-                    <tr
-                      key={token.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap w-[60px]">
-                        <Badge className={`text-sm ${getRankBadgeColor(globalRank)}`}>
-                          {globalRank}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <Link
-                          href={`/token/${encodeURIComponent(token.symbol)}`}
-                          className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                        >
+                      {formatPercentageChange(priceChange)}
+                    </div>
+                  ) : (
+                    <span className="font-medium text-lg text-slate-500 dark:text-slate-400">N/A</span>
+                  )}
+                </div>
+
+                {/* Lores - col-span-2 */}
+                <div className="col-span-2 flex items-center justify-center">
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-red-500 fill-red-500" />
+                    <span className="text-slate-900 dark:text-slate-100 text-lg">{token.good_lores || 0}</span>
+                  </div>
+                </div>
+
+                {/* Age - col-span-2 */}
+                <div className="col-span-2 flex items-center justify-center">
+                  <span className="text-slate-600 dark:text-slate-400 text-lg">{formatTimeAgo(token.created_at)}</span>
+                </div>
+
+                {/* Added By - col-span-2 */}
+                <div className="col-span-2 flex items-center justify-center">
+                  <Badge
+                    variant="secondary"
+                    className={`px-4 py-2 text-sm font-medium ${
+                      getCreatorType(token) === "Owner"
+                        ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    }`}
+                  >
+                    {getCreatorType(token)}
+                  </Badge>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile Table with horizontal scroll */}
+      <div className="block md:hidden bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px] table-fixed">
+            {/* Mobile Header - ALWAYS show on mobile */}
+            <thead className="bg-slate-50 dark:bg-slate-800">
+                <tr>
+                  <th className="text-center px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[10%]">#</th>
+                  <th className="text-left px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[30%]">Token</th>
+                  <th className="text-center px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[15%]">24h Change</th>
+                  <th className="text-center px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[15%]">
+                    <div className="flex items-center justify-center gap-1">
+                      <Heart className="w-4 h-4" />
+                      Lores
+                    </div>
+                  </th>
+                  <th className="text-center px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[10%]">Age</th>
+                  <th className="text-center px-3 py-4 text-sm font-medium text-slate-600 dark:text-slate-300 w-[20%]">Added By</th>
+                </tr>
+              </thead>
+            {/* Mobile Body */}
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {tokens.map((token, index) => {
+                const globalRank = startRank + index;
+                const priceChange = token.price_change_percentage_24h;
+                const isPositive = priceChange !== undefined && priceChange !== null && priceChange >= 0;
+                const hasValidPriceData = priceChange !== undefined && priceChange !== null;
+
+                return (
+                  <tr key={token.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    {/* Rank */}
+                    <td className="px-3 py-4 text-center">
+                      <Badge className={`text-xs ${getRankBadgeColor(globalRank)}`}>
+                        {globalRank}
+                      </Badge>
+                    </td>
+
+                    {/* Token */}
+                    <td className="px-3 py-4">
+                      <Link
+                        href={`/token/${encodeURIComponent(token.symbol)}`}
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center overflow-hidden flex-shrink-0">
                           <img
                             src={token.image_url || "/placeholder.svg?height=40&width=40"}
-                            alt={`Logo for ${cleanTokenName(token.name)}`}
-                            className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-600"
+                            alt={cleanTokenName(token.name)}
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               target.src = "/placeholder.svg?height=40&width=40";
                             }}
                           />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[200px]">
-                                {cleanTokenName(token.name)}
-                              </h3>
-                              {token.featured && (
-                                <Badge className="bg-yellow-500 text-black text-xs">★</Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                              {token.symbol}
-                            </p>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="font-medium text-slate-900 dark:text-slate-100 text-sm break-words leading-tight">
+                              {cleanTokenName(token.name)}
+                            </span>
+                            {token.featured && (
+                              <Badge className="bg-yellow-500 text-black text-xs">★</Badge>
+                            )}
                           </div>
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Scrollable Other Columns */}
-          <div className="flex-1 overflow-x-auto">
-            <table className="w-full bg-white dark:bg-gray-800">
-              {showHeader && (
-                <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                    >
-                      {showSorting ? (
-                        <button
-                          onClick={() => handleSort("price_change_percentage_24h")}
-                          className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-                          aria-label={`Sort by 24h change (${sortField === "price_change_percentage_24h" ? sortDirection : "none"})`}
-                        >
-                          24h Change {getSortIcon("price_change_percentage_24h")}
-                        </button>
-                      ) : (
-                        "24h Change"
-                      )}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                    >
-                      {showSorting ? (
-                        <button
-                          onClick={() => handleSort("good_lores")}
-                          className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-                          aria-label={`Sort by lores (${sortField === "good_lores" ? sortDirection : "none"})`}
-                        >
-                          <Heart className="h-4 w-4" />
-                          Lores {getSortIcon("good_lores")}
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-1 justify-center">
-                          <Heart className="h-4 w-4" />
-                          Lores
+                          <div className="text-xs text-slate-500 dark:text-slate-400 break-all leading-tight">{token.symbol}</div>
                         </div>
-                      )}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                    >
-                      {showSorting ? (
-                        <button
-                          onClick={() => handleSort("created_at")}
-                          className="flex items-center gap-1 hover:text-blue-600 dark:hover:text-blue-400 mx-auto"
-                          aria-label={`Sort by age (${sortField === "created_at" ? sortDirection : "none"})`}
-                        >
-                          Age {getSortIcon("created_at")}
-                        </button>
-                      ) : (
-                        "Age"
-                      )}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider"
-                    >
-                      Added By
-                    </th>
-                  </tr>
-                </thead>
-              )}
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                {tokens.map((token, index) => {
-                  const globalRank = startRank + index;
-                  const priceChange = token.price_change_percentage_24h || 0;
-                  const isPositive = priceChange >= 0;
+                      </Link>
+                    </td>
 
-                  return (
-                    <tr
-                      key={token.id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        <div
-                          className={`flex items-center justify-center gap-1 font-semibold ${
-                            isPositive
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-red-600 dark:text-red-400"
-                          }`}
-                        >
-                          {isPositive ? (
-                            <TrendingUp className="h-4 w-4" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4" />
-                          )}
-                          {formatPercentageChange(priceChange)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        <div className="flex items-center gap-1 text-red-500 justify-center">
-                          <Heart className="h-4 w-4 fill-current" />
-                          <span className="font-semibold">{token.good_lores || 0}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        <span className="text-sm text-slate-600 dark:text-slate-400">
-                          {formatTimeAgo(token.created_at)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-center">
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs ${
-                            getCreatorType(token) === "Owner"
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          }`}
-                        >
-                          {getCreatorType(token)}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Pagination for Desktop */}
-        {showPagination && totalPages > 1 && (
-          <div className="mt-4 flex justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              aria-label="Previous page"
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-slate-600 dark:text-slate-400 self-center">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              aria-label="Next page"
-            >
-              Next
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile List */}
-      <div className="md:hidden">
-        {showHeader && (
-          <div className="bg-slate-50 dark:bg-slate-800 px-4 py-3 border-b border-slate-200 dark:border-slate-700 rounded-t-lg sticky top-0 z-10">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
-              <span className="w-40">Token</span>
-              <div className="flex gap-4">
-                <span className="w-16 text-center">24h</span>
-                <span className="w-16 text-center">Lores</span>
-                <span className="w-16 text-center">Age</span>
-                <span className="w-16 text-center">Added By</span>
-              </div>
-            </div>
-          </div>
-        )}
-        <div className="bg-white dark:bg-gray-800 divide-y divide-slate-200 dark:divide-slate-700 border border-slate-200 dark:border-slate-700 rounded-b-lg">
-          {tokens.map((token, index) => {
-            const globalRank = startRank + index;
-            const priceChange = token.price_change_percentage_24h || 0;
-            const isPositive = priceChange >= 0;
-
-            return (
-              <div
-                key={token.id}
-                className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-              >
-                <Link href={`/token/${encodeURIComponent(token.symbol)}`} className="block">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 w-40 min-w-0">
-                      <Badge
-                        className={`text-xs px-2 py-1 ${getRankBadgeColor(globalRank)} flex-shrink-0`}
-                      >
-                        {globalRank}
-                      </Badge>
-                      <img
-                        src={token.image_url || "/placeholder.svg?height=32&width=32"}
-                        alt={`Logo for ${cleanTokenName(token.name)}`}
-                        className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-600 flex-shrink-0"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = "/placeholder.svg?height=32&width=32";
-                        }}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate max-w-[120px]">
-                            {cleanTokenName(token.name)}
-                          </h3>
-                          {token.featured && (
-                            <Badge className="bg-yellow-500 text-black text-xs flex-shrink-0">
-                              ★
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                          <span className="truncate">{token.symbol}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <div className="w-16 text-center">
-                        <div
-                          className={`flex items-center justify-center gap-1 text-xs font-semibold ${
-                            isPositive
-                              ? "text-green-600 dark:text-green-400"
-                              : "text-red-600 dark:text-red-400"
-                          }`}
-                        >
+                    {/* 24h Change */}
+                    <td className="px-3 py-4 text-center">
+                      {hasValidPriceData ? (
+                        <div className={`flex items-center justify-center gap-1 text-sm font-medium ${
+                          isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                        }`}>
                           {isPositive ? (
                             <TrendingUp className="h-3 w-3" />
                           ) : (
@@ -430,63 +322,69 @@ export default function TokenTable({
                           )}
                           {formatPercentageChange(priceChange)}
                         </div>
-                      </div>
-                      <div className="w-16 text-center">
-                        <div className="flex items-center gap-1 text-red-500 justify-center">
-                          <Heart className="h-3 w-3 fill-current" />
-                          <span className="font-semibold text-xs">{token.good_lores || 0}</span>
-                        </div>
-                      </div>
-                      <div className="w-16 text-center">
-                        <span className="text-xs text-slate-600 dark:text-slate-400">
-                          {formatTimeAgo(token.created_at)}
-                        </span>
-                      </div>
-                      <div className="w-16 text-center">
-                        <Badge
-                          variant="secondary"
-                          className={`text-xs ${
-                            getCreatorType(token) === "Owner"
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          }`}
-                        >
-                          {getCreatorType(token) === "Owner" ? "Owner" : "Comm"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-            );
-          })}
-        </div>
+                      ) : (
+                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">N/A</span>
+                      )}
+                    </td>
 
-        {/* Pagination for Mobile */}
-        {showPagination && totalPages > 1 && (
-          <div className="mt-4 flex justify-center gap-2">
-            <Button
-              variant="outline"
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
-              aria-label="Previous page"
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-slate-600 dark:text-slate-400 self-center">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
-              aria-label="Next page"
-            >
-              Next
-            </Button>
-          </div>
-        )}
+                    {/* Lores */}
+                    <td className="px-3 py-4 text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                        <span className="text-slate-900 dark:text-slate-100 text-sm">{token.good_lores || 0}</span>
+                      </div>
+                    </td>
+
+                    {/* Age */}
+                    <td className="px-3 py-4 text-center">
+                      <span className="text-slate-600 dark:text-slate-400 text-sm">{formatTimeAgo(token.created_at)}</span>
+                    </td>
+
+                    {/* Added By */}
+                    <td className="px-3 py-4 text-center">
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs px-2 py-1 ${
+                          getCreatorType(token) === "Owner"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                        }`}
+                      >
+                        {getCreatorType(token)}
+                      </Badge>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Pagination */}
+      {showPagination && totalPages > 1 && (
+        <div className="mt-4 flex justify-center gap-2">
+          <Button
+            variant="outline"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            aria-label="Previous page"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-slate-600 dark:text-slate-400 self-center">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            aria-label="Next page"
+          >
+            Next
+          </Button>
+        </div>
+      )}
 
       {/* Empty State */}
       {tokens.length === 0 && (
