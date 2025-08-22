@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Eye, EyeOff } from 'lucide-react';
 import { z } from 'zod';
 
 const resetPasswordSchema = z.object({
@@ -19,9 +20,12 @@ const resetPasswordSchema = z.object({
 function ResetPasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidatingToken, setIsValidatingToken] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   
   const router = useRouter();
@@ -30,17 +34,49 @@ function ResetPasswordForm() {
   useEffect(() => {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
-      setError('Invalid or missing reset token');
+      // Don't immediately show error - just set token as null and let form handle it
+      setToken(null);
+      setIsValidatingToken(false);
       return;
     }
     setToken(tokenParam);
+    setIsValidatingToken(false);
   }, [searchParams]);
+
+  const validateField = (field: 'password' | 'confirmPassword', value: string) => {
+    const newErrors = { ...fieldErrors };
+
+    if (field === 'password') {
+      if (value && value.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      } else {
+        delete newErrors.password;
+      }
+      
+      // Also check confirm password match if it exists
+      if (confirmPassword && value !== confirmPassword) {
+        newErrors.confirmPassword = "Passwords don't match";
+      } else if (confirmPassword && value === confirmPassword) {
+        delete newErrors.confirmPassword;
+      }
+    }
+
+    if (field === 'confirmPassword') {
+      if (value && value !== password) {
+        newErrors.confirmPassword = "Passwords don't match";
+      } else {
+        delete newErrors.confirmPassword;
+      }
+    }
+
+    setFieldErrors(newErrors);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!token) {
-      setError('Invalid reset token');
+      setError('This password reset link is invalid or has expired. Please request a new password reset link.');
       return;
     }
 
@@ -48,6 +84,7 @@ function ResetPasswordForm() {
       // Validate form
       resetPasswordSchema.parse({ password, confirmPassword });
       setError(null);
+      setFieldErrors({});
       setIsLoading(true);
 
       console.log('🔍 Attempting password reset...');
@@ -67,40 +104,46 @@ function ResetPasswordForm() {
       }
 
       console.log('✅ Password reset successful');
-      setSuccess(true);
       
-      // Redirect to login after 3 seconds
-      setTimeout(() => {
-        router.push('/');
-      }, 3000);
+      // Immediately redirect to login with success message
+      router.push('/?message=password-reset-success');
 
     } catch (error) {
       console.log('❌ Password reset error:', error);
       if (error instanceof z.ZodError) {
-        setError(error.errors[0].message);
+        const errors: {[key: string]: string} = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0].toString()] = err.message;
+          }
+        });
+        setFieldErrors(errors);
+        setError(null);
       } else if (error instanceof Error) {
         setError(error.message);
+        setFieldErrors({});
       } else {
         setError('An unexpected error occurred');
+        setFieldErrors({});
       }
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (success) {
+  // Show loading state while validating token
+  if (isValidatingToken) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="w-full max-w-md space-y-6 p-6">
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Password Reset Successful</h1>
+            <h1 className="text-2xl font-bold">Password Reset</h1>
             <p className="text-muted-foreground mt-2">
-              Your password has been successfully reset.
+              Validating reset link...
             </p>
           </div>
-          
-          <div className="bg-green-50 text-green-700 px-4 py-3 rounded-md text-sm">
-            ✅ Password updated successfully! Redirecting to login...
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
           </div>
         </div>
       </div>
@@ -111,14 +154,20 @@ function ResetPasswordForm() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-md space-y-6 p-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Reset Your Password</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl font-bold mb-10">Password Reset</h1>
+          <p className="text-muted-foreground mt-2 mb-5">
             Enter your new password below.
           </p>
         </div>
 
+        {(!token && !isValidatingToken) && (
+          <div className="bg-green-50 text-green-700 px-4 py-3 rounded-md text-sm border border-green-200">
+            This password reset link is invalid or has expired. Please request a new password reset link.
+          </div>
+        )}
+
         {error && (
-          <div className="bg-destructive/15 text-destructive px-4 py-3 rounded-md text-sm">
+          <div className="bg-green-50 text-green-700 px-4 py-3 rounded-md text-sm border border-green-200">
             {error}
           </div>
         )}
@@ -126,32 +175,66 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  validateField('password', e.target.value);
+                }}
+                required
+                minLength={8}
+                disabled={isLoading}
+                className={fieldErrors.password ? "border-green-300" : ""}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {fieldErrors.password && (
+              <p className="text-sm text-green-700">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Confirm New Password</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="confirm-password"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  validateField('confirmPassword', e.target.value);
+                }}
+                required
+                disabled={isLoading}
+                className={fieldErrors.confirmPassword ? "border-green-300" : ""}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                disabled={isLoading}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {fieldErrors.confirmPassword && (
+              <p className="text-sm text-green-700">{fieldErrors.confirmPassword}</p>
+            )}
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading || !token}>
+          <Button type="submit" className="w-full" disabled={isLoading || !token || Object.keys(fieldErrors).length > 0}>
             {isLoading ? 'Resetting Password...' : 'Reset Password'}
           </Button>
         </form>

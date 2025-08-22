@@ -46,7 +46,7 @@ export default function ResetPassword() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/auth/password/reset`, {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export default function ResetPassword() {
         }, 2000);
       } else {
         const errorData = await response.json();
-        setError(errorData.errors?.[0]?.message || 'Failed to reset password');
+        setError(errorData.error || 'Failed to reset password');
       }
     } catch (err) {
       setError('Network error. Please try again.');

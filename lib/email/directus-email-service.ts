@@ -5,6 +5,7 @@
 
 import { createDirectus, rest, staticToken } from '@directus/sdk';
 import { generatePasswordResetEmailHTML, generatePasswordResetEmailText, EMAIL_CONFIG, type PasswordResetEmailData } from './templates';
+import { authLogger } from '@/lib/monitoring/logger';
 
 // Create a server-side Directus client with admin token
 function createDirectusEmailClient() {
@@ -130,8 +131,8 @@ export async function sendPasswordResetEmail(
 }
 
 /**
- * Alternative approach: Use Directus password reset with custom URL handling
- * This generates a reset token and stores it in Directus, then sends custom email
+ * Send password reset email using Directus's built-in system
+ * This properly uses Directus's token generation and email sending
  */
 export async function sendCustomPasswordResetEmail(
   userEmail: string,
@@ -140,16 +141,17 @@ export async function sendCustomPasswordResetEmail(
   try {
     const client = createDirectusEmailClient();
     
-    // First, generate a password reset request to get a token
-    // This will create the reset token in Directus but we'll send our own email
+    // Use Directus's built-in password reset request
+    // This will generate a token and send email automatically via Directus
     const resetResponse = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/auth/password/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.DIRECTUS_ADMIN_TOKEN}`,
       },
       body: JSON.stringify({
         email: userEmail.toLowerCase(),
-        reset_url: resetUrl, // This won't be used since we're sending our own email
+        reset_url: `${resetUrl}?email=${encodeURIComponent(userEmail)}`, // Include email in reset URL
       }),
     });
 
@@ -166,39 +168,20 @@ export async function sendCustomPasswordResetEmail(
       return { success: false, error: 'Failed to initiate password reset' };
     }
 
-    // At this point, Directus has created a reset token, but we need to extract it
-    // Since we can't easily get the token from the response, we'll use our own token system
+    console.log('✅ Directus password reset email sent successfully');
     
-    // Generate our own token for the custom email
-    const customToken = generateResetToken();
-    
-    // Store the mapping between our custom token and the user email
-    // In a production system, you'd want to store this in a secure way with expiration
-    // For now, we'll use the Directus approach but send our custom email
-    
-    const emailData: PasswordResetEmailData = {
-      resetToken: customToken,
-      userEmail,
-      resetUrl,
-      expirationHours: 24,
-    };
-    
-    const htmlContent = generatePasswordResetEmailHTML(emailData);
-    const textContent = generatePasswordResetEmailText(emailData);
-    
-    const emailSent = await sendEmailViaDirectus({
-      to: userEmail,
-      subject: EMAIL_CONFIG.subject,
-      html: htmlContent,
-      text: textContent,
+    // Log the successful request for monitoring
+    authLogger.info('Password reset email sent via Directus', {
+      email: userEmail.toLowerCase(),
+      timestamp: new Date().toISOString(),
     });
-    
-    return { success: emailSent };
+
+    return { success: true };
   } catch (error) {
     console.error('❌ Error in sendCustomPasswordResetEmail:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 }

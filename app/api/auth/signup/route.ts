@@ -2,24 +2,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authLogger } from '@/lib/monitoring/logger';
 import { authSessionManager } from '@/lib/auth/session-manager';
+import { getErrorMessage } from '@/lib/auth/error-codes';
+import { rateLimiter } from '@/lib/auth/rate-limiter';
 
 export async function POST(req: NextRequest) {
   try {
     const { email, first_name, password, sessionId } = await req.json();
     
     if (!email || !first_name || !password) {
-      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
+      return NextResponse.json({
+        error: getErrorMessage('MISSING_REQUIRED_FIELDS'),
+        code: 'MISSING_REQUIRED_FIELDS'
+      }, { status: 400 });
     }
 
     // Use admin token from environment
     const adminToken = process.env.ADMIN_TOKEN;
     if (!adminToken) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+      return NextResponse.json({
+        error: getErrorMessage('SERVER_ERROR'),
+        code: 'SERVER_ERROR'
+      }, { status: 500 });
     }
 
     // Get client IP and user agent
     const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const userAgent = req.headers.get('user-agent') || 'unknown';
+    
+    // Check rate limiting
+    const rateLimitKey = `signup:${ipAddress}`;
+    const rateLimitResult = rateLimiter.checkLimit(rateLimitKey, 5, 15 * 60 * 1000); // 5 attempts per 15 minutes
+    
+    // Set rate limit headers
+    const responseHeaders = new Headers();
+    responseHeaders.set('X-RateLimit-Limit', '5');
+    responseHeaders.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+    responseHeaders.set('X-RateLimit-Reset', Math.ceil(rateLimitResult.resetTime / 1000).toString());
+    
+    if (!rateLimitResult.allowed) {
+      authLogger.warn('Rate limit exceeded for signup', { ipAddress, userAgent });
+      return NextResponse.json({
+        error: getErrorMessage('RATE_LIMIT_EXCEEDED'),
+        code: 'RATE_LIMIT_EXCEEDED',
+        retryAfter: Math.ceil(rateLimitResult.resetTime / 1000)
+      }, {
+        status: 429,
+        headers: responseHeaders
+      });
+    }
     
     // Create or get session for tracking
     let session;
@@ -54,7 +84,10 @@ export async function POST(req: NextRequest) {
         const blockedIpsData = await blockedIpsResponse.json();
         if (blockedIpsData.data && blockedIpsData.data.length > 0) {
           authLogger.warn('Signup attempt from blocked IP', { ipAddress });
-          return NextResponse.json({ error: 'This IP address has been blocked' }, { status: 403 });
+          return NextResponse.json({
+            error: getErrorMessage('IP_BLOCKED'),
+            code: 'IP_BLOCKED'
+          }, { status: 403 });
         }
       }
     } catch (error) {
@@ -82,7 +115,10 @@ export async function POST(req: NextRequest) {
       
       if (emailCheckData.data && emailCheckData.data.length > 0) {
         console.log('❌ User already exists with email:', email.toLowerCase());
-        return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
+        return NextResponse.json({
+          error: getErrorMessage('EMAIL_ALREADY_EXISTS'),
+          code: 'EMAIL_ALREADY_EXISTS'
+        }, { status: 409 });
       }
       console.log('✅ No existing user found, proceeding with signup');
     } else {
@@ -125,7 +161,26 @@ export async function POST(req: NextRequest) {
     if (!createUserResponse.ok) {
       const errorData = await createUserResponse.json();
       authLogger.error('Failed to create user in Directus', new Error(`HTTP ${createUserResponse.status}: ${JSON.stringify(errorData)}`));
-      return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
+      
+      // Handle specific Directus errors
+      let errorCode = 'SIGNUP_FAILED';
+      let errorMessage = getErrorMessage('SIGNUP_FAILED');
+      
+      if (errorData.errors && errorData.errors.length > 0) {
+        const firstError = errorData.errors[0];
+        if (firstError.extensions?.code === 'RECORD_NOT_UNIQUE') {
+          errorCode = 'EMAIL_ALREADY_EXISTS';
+          errorMessage = getErrorMessage('EMAIL_ALREADY_EXISTS');
+        } else if (firstError.extensions?.code === 'FAILED_VALIDATION') {
+          errorCode = 'INVALID_INPUT';
+          errorMessage = firstError.message || getErrorMessage('INVALID_INPUT');
+        }
+      }
+      
+      return NextResponse.json({
+        error: errorMessage,
+        code: errorCode
+      }, { status: 500 });
     }
 
     const newUser = await createUserResponse.json();

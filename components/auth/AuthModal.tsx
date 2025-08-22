@@ -58,7 +58,7 @@ export function AuthModal({
             </DialogDescription>
           </DialogHeader>
           <div className="px-6 pb-6">
-            <AuthForm />
+            <AuthForm onSuccess={onClose} onClose={onClose} />
           </div>
         </DialogContent>
       </Dialog>
@@ -83,7 +83,7 @@ export function AuthModal({
           </DialogDescription>
         </DialogHeader>
         <div className="px-6 pb-6">
-          <AuthForm />
+          <AuthForm onSuccess={onClose} onClose={onClose} />
         </div>
       </DialogContent>
     </Dialog>

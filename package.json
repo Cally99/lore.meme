@@ -10,11 +10,15 @@
     "setup-env": "node scripts/setup-env.js",
     "check-env": "node scripts/check-env.js",
     "add-sample-tokens": "node scripts/add-sample-tokens.js",
-    "generate-types": "npx openapi-typescript http://localhost:8055/server/specs/oas --output ./types/directus/api-collection.ts"
+    "generate-types": "npx openapi-typescript http://localhost:8055/server/specs/oas --output ./types/directus/api-collection.ts",
+    "test": "vitest",
+    "test:unit": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.66",
     "@directus/sdk": "^19.1.0",
+    "@hookform/resolvers": "^5.2.1",
     "@neondatabase/serverless": "^0.10.1",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -51,6 +55,7 @@
     "pg": "^8.16.3",
     "react": "^19",
     "react-dom": "^19",
+    "react-hook-form": "^7.62.0",
     "react-icons": "^5.5.0",
     "redis-cli": "^2.1.2",
     "tailwind-merge": "^2.5.5",
@@ -58,9 +63,11 @@
     "twitter-api-v2": "^1.24.0",
     "uuid": "^11.1.0",
     "viem": "^2.31.3",
-    "wagmi": "^2.15.6"
+    "wagmi": "^2.15.6",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/lru-cache": "^7.10.9",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

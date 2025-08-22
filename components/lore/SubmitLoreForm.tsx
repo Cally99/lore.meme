@@ -610,11 +610,11 @@ export function SubmitLoreForm() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <Label htmlFor="telegram" className="text-gray-300 mb-2 block">
-                                        Your Telegram
+                                        Telegram
                                     </Label>
                                     <Input
                                         id="telegram"
-                                        placeholder="@yourusername"
+                                        placeholder="@tokens telegram handle"
                                         value={formData.telegram_handle}
                                         onChange={(e) => handleInputChange('telegram_handle', e.target.value)}
                                         className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500"
@@ -626,7 +626,7 @@ export function SubmitLoreForm() {
 
                                 <div>
                                     <Label htmlFor="email" className="text-gray-300 mb-2 block">
-                                        Your Email *
+                                        Email *
                                     </Label>
                                     <Input
                                         id="email"

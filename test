@@ -1,0 +1,31 @@
+ curl -X GET http://localhost:8055/roles -H "Authorization: Bearer tZysSCeE3RsghJ1sX0Gr4idOrBgDGDG-"
+curl -X POST http://localhost:8055/auth/login -H "Content-Type: application/json" -d '{"email":"tomirl2023@gmail.com","password":"Leagoom13!"}'
+
+
+curl -X POST http://localhost:8055/users -H "Authorization: Bearer tZysSCeE3RsghJ1sX0Gr4idOrBgDGDG-" -H "Content-Type: application/json" -d '{"email":"tomirl2023@gmail.com","password":"Leagoom13!","role":"afdf5b45-567e-42ac-95ea-591dd4a8ac10"}'
+
+
+
+
+curl -X POST \
+     -H "Authorization: Bearer tZysSCeE3RsghJ1sX0Gr4idOrBgDGDG-" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "t2est22@example.com",
+       "password": "SecurePassword123!",
+       "first_name": "John",
+       "last_name": "Doe",
+       "role": "3a4464fb-2189-4710-a164-2503eed88ae7",
+       "status": "active"
+     }' \
+     "http://localhost:8055/users"
+
+Step 2: Login to Create Session
+
+curl -X POST \
+     -H "Content-Type: application/json" \
+     -d '{
+       "email": "",
+       "password": ""
+     }' \
+     "http://localhost:8055/auth/login"

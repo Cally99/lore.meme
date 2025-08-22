@@ -21,7 +21,14 @@ export async function POST(request: Request) {
     const directusAdmin = createDirectus(directusUrl).with(staticToken(adminToken)).with(rest());
     
     // Create the user account
-    await directusAdmin.request(
+    console.log('🔍 [REGISTER] Creating user with data:', {
+      first_name: username,
+      email: email,
+      role: newUserRoleId,
+      status: 'active'
+    });
+    
+    const userData = await directusAdmin.request(
       createUser({
         first_name: username,
         email: email,
@@ -30,6 +37,14 @@ export async function POST(request: Request) {
         status: 'active',
       })
     );
+    
+    console.log('✅ [REGISTER] User created successfully:', {
+      id: userData.id,
+      email: userData.email,
+      first_name: userData.first_name,
+      role: userData.role,
+      status: userData.status
+    });
     
     // Use SDK authentication to login the new user
     const directusUserClient = createDirectus(directusUrl)
