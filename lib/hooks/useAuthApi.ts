@@ -1,12 +1,10 @@
 // @ts-nocheck
 
-// src/lib/api/hooks/useAuthApi.ts
+// src/lib/api/hooks/useAuthApi.ts - Simplified version
 import { useState, useCallback } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useDisconnect } from 'wagmi';
-import { authClient } from '@/lib/api/clients/authClient';
-import { UserRole } from '@/types/directus/auth';
 import { authLogger } from '@/lib/monitoring/logger';
 import { getErrorMessage, getErrorCode } from '@/lib/auth/error-codes';
 
@@ -50,47 +48,24 @@ export function useAuthApi() {
         throw new Error(signupData.error || 'Signup failed');
       }
 
-      // Step 2: Automatically sign in the user with retry mechanism
-      const maxRetries = 3;
-      const baseDelay = 500; // 500ms base delay
-      
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          const result = await signIn('credentials', {
-            redirect: false,
-            email,
-            password,
-          });
+      // Step 2: Automatically sign in the user (simplified - no retry logic)
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
 
-          if (result?.error) {
-            // If it's not an ACCOUNT_NOT_FOUND error or we've exhausted retries, throw the error
-            if (result.error !== 'ACCOUNT_NOT_FOUND' || attempt === maxRetries) {
-              throw new Error(result.error);
-            }
-            
-            // Wait before retrying with exponential backoff
-            if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, baseDelay * (attempt + 1)));
-            }
-          } else if (result?.ok) {
-            // Success - break out of retry loop
-            break;
-          }
-        } catch (error) {
-          // If we've exhausted all retries, re-throw the error
-          if (attempt === maxRetries) {
-            throw error;
-          }
-          
-          // Wait before retrying with exponential backoff
-          await new Promise(resolve => setTimeout(resolve, baseDelay * (attempt + 1)));
-        }
+      if (result?.error) {
+        throw new Error(result.error);
       }
 
-      // Refresh session data
-      await update();
-      router.refresh();
-      return { success: true, user: signupData.user };
+      if (result?.ok) {
+        await update();
+        router.refresh();
+        return { success: true, user: signupData.user };
+      }
+
+      throw new Error('Auto-login failed after signup');
     } catch (error) {
       const errorMessage = getErrorMessage(error instanceof Error ? error.message : 'Signup failed');
       const errorCode = getErrorCode(error instanceof Error ? error.message : 'Signup failed');
@@ -127,9 +102,20 @@ export function useAuthApi() {
       throw new Error('Login failed');
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : 'Login failed';
+      let userMessage = 'Invalid username or password. Please try again.';
+
+      // Provide specific messages for common errors
+      if (rawMessage.includes('CredentialsSignin')) {
+        userMessage = 'Invalid username or password. Please try again.';
+      } else if (rawMessage.includes('Access denied')) {
+        userMessage = 'Access denied. Please contact support.';
+      } else if (rawMessage.includes('Too many requests')) {
+        userMessage = 'Too many login attempts. Please wait a few minutes before trying again.';
+      }
+
       const message = getErrorMessage(rawMessage);
       const code = getErrorCode(rawMessage);
-      const errorObj = { message, code, details: error };
+      const errorObj = { message: userMessage, code, details: error };
       setError(errorObj);
       authLogger.error('Email login failed', error as Error);
       throw errorObj;
@@ -145,7 +131,7 @@ export function useAuthApi() {
 
     try {
       const result = await signIn(provider, { redirect: false });
-      
+
       if (result?.error) {
         // Handle specific error cases with user-friendly messages
         if (result.error.includes('CredentialsSignin')) {
@@ -184,7 +170,7 @@ export function useAuthApi() {
 
     try {
       console.log('🔍 [USE AUTH API] Starting wallet authentication via credentials provider');
-      
+
       // Use credentials provider with wallet parameters
       const result = await signIn('credentials', {
         redirect: false,
@@ -259,7 +245,7 @@ export function useAuthApi() {
     setIsLoading(true);
     try {
       console.log('🔍 [USE AUTH API] Starting logout process');
-      
+
       // Step 1: Clear wallet localStorage sessions if wallet address exists
       if (session?.user?.walletAddress) {
         const address = session.user.walletAddress;
@@ -267,15 +253,15 @@ export function useAuthApi() {
         localStorage.removeItem(key);
         console.log('✅ [USE AUTH API] Cleared wallet session from localStorage');
       }
-      
+
       // Step 2: Disconnect wagmi wallet connection
       disconnect();
       console.log('✅ [USE AUTH API] Disconnected wagmi wallet');
-      
+
       // Step 3: Sign out from NextAuth
       await signOut({ redirect: false });
       console.log('✅ [USE AUTH API] NextAuth signout completed');
-      
+
       router.refresh();
     } catch (error) {
       console.error('❌ [USE AUTH API] Logout error:', error);
@@ -288,30 +274,6 @@ export function useAuthApi() {
       // Still attempt NextAuth signout even if wallet disconnect fails
       await signOut({ redirect: false });
       router.refresh();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Update user profile
-  const updateProfile = async (updates: Partial<{ first_name: string; last_name: string; role: UserRole }>) => {
-    if (!session?.user?.id) {
-      throw new Error('No authenticated user');
-    }
-
-    setIsLoading(true);
-    try {
-      const updatedUser = await authClient.updateUser(session.user.id, updates);
-      await update();
-      return updatedUser;
-    } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : 'Profile update failed';
-      const message = getErrorMessage(rawMessage);
-      const code = getErrorCode(rawMessage);
-      const errorObj = { message, code, details: error };
-      setError(errorObj);
-      authLogger.error('Profile update failed', error as Error);
-      throw new Error(message);
     } finally {
       setIsLoading(false);
     }
@@ -332,7 +294,6 @@ export function useAuthApi() {
     signInWithWallet,
     getWalletNonce,
     logout,
-    updateProfile,
     clearErrors,
   };
 }

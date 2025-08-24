@@ -296,7 +296,7 @@ export function AuthForm({ onSuccess, onClose, defaultTab = 'login' }: AuthFormP
           {(error || walletError) && (
             <Alert variant="destructive">
               <AlertDescription>
-                An unexpected error occurred. Please try again.
+                {error?.message || walletError || 'Invalid username or password. Please try again.'}
               </AlertDescription>
             </Alert>
           )}
@@ -436,7 +436,7 @@ export function AuthForm({ onSuccess, onClose, defaultTab = 'login' }: AuthFormP
           {error && (
             <Alert variant="destructive">
               <AlertDescription>
-                An unexpected error occurred. Please try again.
+                {error?.message || 'Unable to create account. Please check your information and try again.'}
               </AlertDescription>
             </Alert>
           )}
